@@ -11,5 +11,4 @@ export interface PostgresSingleClient {
   ): Promise<PostgresQueryResult<R>>
   query<R>(cursor: PostgresCursor<R>): PostgresCursor<R>
   connect(): Promise<void>
-  end(): Promise<void>
 }

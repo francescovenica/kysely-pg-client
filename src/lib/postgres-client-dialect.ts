@@ -16,6 +16,7 @@ import {
 
 import { PostgresClientDialectConfig } from './postgres-client-dialect-config.js'
 import { PostgresClientDriver } from './postgres-client-driver.js'
+import { PostgresSingleClient } from './postgres-single-client'
 
 /**
  * A Kysely Postgres dialect that uses a single `pg.Client` instance, providng
@@ -23,13 +24,18 @@ import { PostgresClientDriver } from './postgres-client-driver.js'
  */
 export class PostgresClientDialect implements Dialect {
   readonly #config: PostgresClientDialectConfig
+  private driver: PostgresClientDriver
 
   constructor(config: PostgresClientDialectConfig) {
     this.#config = config
+    this.driver = new PostgresClientDriver(this.#config)
   }
 
   createDriver(): Driver {
-    return new PostgresClientDriver(this.#config)
+    if (!this.driver) {
+      this.driver = new PostgresClientDriver(this.#config)
+    }
+    return this.driver
   }
 
   /* BEGIN SYNCED CODE | Copyright (c) 2022 Sami Koskimäki | MIT License */
@@ -43,6 +49,10 @@ export class PostgresClientDialect implements Dialect {
 
   createIntrospector(db: Kysely<any>): DatabaseIntrospector {
     return new PostgresIntrospector(db)
+  }
+
+  setClient(client: PostgresSingleClient): void {
+    this.driver.setClient(client)
   }
   /* END SYNCED CODE */
 }

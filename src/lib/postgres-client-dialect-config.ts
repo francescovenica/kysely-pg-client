@@ -18,7 +18,7 @@ export interface PostgresClientDialectConfig {
    *
    * https://node-postgres.com/apis/client
    */
-  client: PostgresSingleClient | (() => Promise<PostgresSingleClient>)
+  client: PostgresSingleClient
 
   /**
    * https://github.com/brianc/node-postgres/tree/master/packages/pg-cursor
