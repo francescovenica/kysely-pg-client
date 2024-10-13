@@ -25,11 +25,16 @@
     "dist/**"
   ],
   "exports": {
-    ".": {
-      "types": "./dist/csj/index.d.ts",
-      "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js"
-    }
+    ".": { 
+        "require": { 
+            "default": "./dist/cjs/index.js", 
+            "types": "./dist/cjs/index.d.ts" 
+        }, 
+        "import": { 
+            "default": "./dist/esm/index.js", 
+            "types": "./dist/esm/index.d.ts" 
+        } 
+    } 
   },
   "scripts": {
     "clean": "rm -rf node_modules & rm -rf dist & rm -rf test/current/dist & rm -rf test/latest/dist",
