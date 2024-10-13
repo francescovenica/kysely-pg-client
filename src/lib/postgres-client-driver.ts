@@ -34,18 +34,17 @@ export class PostgresClientDriver implements Driver {
 
   async acquireConnection(): Promise<DatabaseConnection> {
     if (this.#connection === undefined) {
-      this.#client = isFunction(this.#config.client)
-        ? await this.#config.client()
-        : this.#config.client
-      await this.#client.connect()
+      this.#client = this.#config.client
+
       this.#connection = new PostgresClientConnection(this.#client, {
         cursor: this.#config.cursor ?? null,
       })
-    } else if (this.#inUse) {
-      throw new Error(
-        'Attempted to acquire a second connection; not configured as a pool'
-      )
-    }
+    } 
+    // else if (this.#inUse) {
+    //   throw new Error(
+    //     'Attempted to acquire a second connection; not configured as a pool'
+    //   )
+    // }
     this.#inUse = true
     return this.#connection
   }
@@ -84,8 +83,11 @@ export class PostgresClientDriver implements Driver {
 
   async destroy(): Promise<void> {
     if (this.#client !== undefined) {
-      await this.#client.end()
     }
+  }
+
+  setClient(client: PostgresSingleClient) {
+    this.#client = client
   }
 }
 
@@ -108,28 +110,9 @@ class PostgresClientConnection implements DatabaseConnection {
   /* BEGIN SYNCED CODE | Copyright (c) 2022 Sami Koskimäki | MIT License */
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
     try {
-      const result = await this.#client.query<O>(compiledQuery.sql, [
+      return await this.#client.query<O>(compiledQuery.sql, [
         ...compiledQuery.parameters,
       ])
-
-      if (
-        result.command === 'INSERT' ||
-        result.command === 'UPDATE' ||
-        result.command === 'DELETE'
-      ) {
-        const numAffectedRows = BigInt(result.rowCount)
-
-        return {
-          // TODO: remove.
-          numUpdatedOrDeletedRows: numAffectedRows,
-          numAffectedRows,
-          rows: result.rows ?? [],
-        }
-      }
-
-      return {
-        rows: result.rows ?? [],
-      }
     } catch (err) {
       throw extendStackTrace(err, new Error())
     }
